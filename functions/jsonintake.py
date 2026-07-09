@@ -6,7 +6,7 @@ from pathlib import Path
 import json
 from typing import Any
 
-from structs.room_params import RoomParams
+from classes.room_params import RoomParams
 
 PathLike = str | Path
 

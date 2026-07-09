@@ -4,9 +4,9 @@ from pathlib import Path
 from rich.table import Table
 from rich.console import Console
 
-from structs.cycles import BuildUpDecayCycle
-from structs.monitor_output import MonitorOutput
-from structs.room_params import RoomParams
+from classes.cycles import BuildUpDecayCycle
+from classes.monitor_output import MonitorOutput
+from classes.room_params import RoomParams
 import pandas as pd
 
 class SiteData:

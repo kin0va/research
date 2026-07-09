@@ -1,6 +1,6 @@
 import numpy as np
 import typing as t
-from structs.occupancy_params import OccupancyParameters
+from classes.occupancy_params import OccupancyParameters
 
 def Cali_Occupancy_Equation(co2_series: np.ndarray, delta_t_s: np.ndarray, ACH_decay: float, params:OccupancyParameters,) -> np.ndarray:
     """

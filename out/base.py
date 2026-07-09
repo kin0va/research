@@ -30,7 +30,7 @@ import matplotlib.dates as mdates
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from graphing.style import PALETTE, CO2_BANDS, FIG_WIDTH_IN, FIG_HEIGHT_IN, apply_style
+from out.style import PALETTE, CO2_BANDS, FIG_WIDTH_IN, FIG_HEIGHT_IN, apply_style
 
 # Apply the global style as soon as this module is imported, so any caller
 # that imports graphing.base gets consistent figures without an extra step.

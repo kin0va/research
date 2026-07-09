@@ -7,13 +7,13 @@ import typing as t
 import matplotlib.dates as mdates
 from matplotlib.axes import Axes
 
-from graphing.style import (
+from out.style import (
     CO2_BACKGROUND_PPM, COLOR_CO2, finish, new_ax, overlay_cycles, style_axes,
 )
 
 if t.TYPE_CHECKING:
     import pandas as pd
-    from structs.cycles import BuildUpDecayCycle
+    from classes.cycles import BuildUpDecayCycle
 
 
 def plot_daily(

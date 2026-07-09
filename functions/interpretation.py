@@ -3,7 +3,7 @@ import pandas as pd
 
 from filters.peak_valley import identify_valid_peak_valley_pairs
 from functions.csvintake import read_monitor_output_from_csv
-from structs.sitedata import SiteData
+from classes.sitedata import SiteData
 from calculations.occupancy import Cali_Occupancy_Equation
 
 def build_site_data(room_json: Path, monitor_csv: Path, order: int = 200) -> SiteData:

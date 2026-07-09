@@ -7,7 +7,7 @@ import typing
 import numpy as np
 import pandas as pd
 
-from structs.monitor_output import MonitorOutput
+from classes.monitor_output import MonitorOutput
 
 PathLike = str | Path
 
