@@ -18,8 +18,8 @@ class TermUserGuide:
         self.console.print()
         self.console.print(
             Panel.fit(
-                "[bold cyan]IAQ Occupancy Inference[/bold cyan]\n"
-                "[italic]Terminal guide for loading room metadata and CO₂ monitor data.[/italic]",
+                "[bold cyan]CO₂ Occupancy Estimation[/bold cyan]\n"
+                "[italic]Terminal guide for loading room metadata and CO₂ monitor data for occupancy modelling.[/italic]",
                 border_style="cyan",
                 box=ROUNDED,
             )
@@ -28,12 +28,12 @@ class TermUserGuide:
 
         self._print_section(
             "Overview",
-            "This package combines room metadata and CO₂ sensor logs to build occupancy-related site models.",
+            "This project estimates room occupancy from time-series CO₂ measurements by comparing multiple modelling approaches, including decay analysis, build-up analysis, Kalman filtering, and machine learning.",
         )
 
         self._print_section(
             "How it works",
-            "The workflow loads room parameters, ingests monitor output, and prepares the data for analysis modules such as occupancy estimation, filtering, and plotting.",
+            "The workflow loads room metadata, ingests CO₂ monitor data, and prepares shared site models for analysis modules that estimate occupancy and generate reports or plots.",
         )
 
         self.console.print(Panel.fit("[bold]Quick start[/bold]", border_style="magenta"))
@@ -53,7 +53,7 @@ class TermUserGuide:
 
         self._print_section(
             "Project structure",
-            "calculations/\nfilters/\nfunctions/\ngraphing/\nstructs/\ndata/\ndocs/\nmain.py\nrequirements.txt",
+            "1-decay-approach/\n2-build-up-approach/\n3-kalman-approach/\n4-ml-approach/\ncalculations/\nclasses/\napis/\ndata/\ndocs/\nprogress-reports/\nresults/\nmain.py\nrequirements.txt",
         )
 
         self._print_section(
@@ -63,12 +63,12 @@ class TermUserGuide:
 
         self._print_section(
             "Scientific breakdown",
-            "[dim]TODO: Add your modelling assumptions, ventilation equations, tracer decay discussion, and any scientific rationale here.[/dim]",
+            "CO₂ is used as a proxy for occupancy because human metabolism increases indoor concentration while ventilation and air exchange reduce it. The package compares ventilation-driven decay estimates, accumulation-based build-up estimates, recursive state-space filtering, and learned occupancy patterns from historical data.",
         )
 
         self._print_section(
             "Accuracy and validation",
-            "[dim]TODO: Add precision, calibration notes, validation metrics, uncertainty estimates, and known limitations here.[/dim]",
+            "Validation is based on comparing the outputs of each approach on the same room and sensor data, while checking consistency across room configurations and monitoring conditions. Sensor placement, ventilation variability, and measurement noise can all affect the precision of the estimates.",
         )
 
     def _print_section(self, title: str, body: str) -> None:
