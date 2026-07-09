@@ -22,6 +22,9 @@ class SiteData:
         self._weekly_data = None
         self._monthly_data = None
 
+        #Only used by Kalman filter approach
+        self.occupied_periods: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+
     # ------------------------------------------------------------------
     # Generic period-splitting helper
     # ------------------------------------------------------------------
