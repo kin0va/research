@@ -1,17 +1,17 @@
 from pathlib import Path
 import pandas as pd
 
-from filters.peak_valley import identify_valid_peak_valley_pairs
+from inflection_finder import identify_valid_peak_valley_pairs
 from functions.csvintake import read_monitor_output_from_csv
 from classes.sitedata import SiteData
 from calculations.occupancy import Cali_Occupancy_Equation
 
 def build_site_data(room_json: Path, monitor_csv: Path, order: int = 200) -> SiteData:
     monitor_output = read_monitor_output_from_csv(monitor_csv)
-    site_data = SiteData.from_json(
-        room_json,
+    site_data :SiteData = SiteData(
+        site_name=room_json.stem,
+        room_params=room_json,
         monitor_output=monitor_output,
-        cycles=[],
     )
 
     dataframe = pd.DataFrame(
@@ -25,7 +25,6 @@ def build_site_data(room_json: Path, monitor_csv: Path, order: int = 200) -> Sit
         order=order,
     )
 
-    site_data.cycles = valid_cycles
     site_data.valid_cycles = valid_cycles
     site_data.invalid_cycles = []
     site_data.invalid_peaks = excluded_peaks

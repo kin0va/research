@@ -10,11 +10,10 @@ from classes.room_params import RoomParams
 import pandas as pd
 
 class SiteData:
-    def __init__(self, site_name, room_params, monitor_output, cycles):
+    def __init__(self, site_name, room_params, monitor_output,):
         self.site_name = site_name
         self.room_params = room_params
         self.monitor_output = monitor_output
-        self.cycles = cycles
         self.invalid_peaks: list[int] = []
         self.invalid_valleys: list[int] = []
         self.valid_cycles: list[BuildUpDecayCycle] = []
@@ -84,7 +83,7 @@ class SiteData:
         # the ORIGINAL index instead — see caveat below.
 
         result: dict[str, list[BuildUpDecayCycle]] = {label: [] for label in period_data}
-        for cycle in self.cycles:
+        for cycle in self.valid_cycles:
             label = idx_to_label.get(cycle.peak_idx)
             if label is not None:
                 result[label].append(cycle)
