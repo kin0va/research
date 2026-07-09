@@ -6,8 +6,9 @@ class OccupancyParameters:
     """
     Physical constants for the CO2 mass-balance model.
 
-    All parameters have sensible defaults so only the ones you know need
-    to be supplied. At minimum, provide `volume`.
+    VOLUME MUST BE PROVIDED. 
+    
+    All other parameters have defaults that are reasonable for a typical office space.
 
     Args:
         volume:      Volume of the office space (m³). Required.
@@ -19,7 +20,7 @@ class OccupancyParameters:
                      Default 0.0 — ignored unless you have a measured value.
         cpp_per_person: CO2 generation rate per person (ppm·m³/s). FIND
     """
-    def __init__(self, volume: float = 1, rho_air: float = 1.2, c_amb: float = 420,
+    def __init__(self, volume: float, rho_air: float = 1.2, c_amb: float = 420,
                  c_adj: Optional[float] = None, m_v_in: float = 0.0,
                  cpp_per_person: float = 0.001,site_code: str = ""):
         self.volume          = volume

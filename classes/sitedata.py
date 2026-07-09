@@ -10,7 +10,7 @@ from classes.room_params import RoomParams
 import pandas as pd
 
 class SiteData:
-    def __init__(self, site_name, room_params, monitor_output,):
+    def __init__(self, site_name: str, room_params: RoomParams, monitor_output: MonitorOutput):
         self.site_name = site_name
         self.room_params = room_params
         self.monitor_output = monitor_output
@@ -88,3 +88,14 @@ class SiteData:
             if label is not None:
                 result[label].append(cycle)
         return result
+    
+
+def build_site_data(
+    site_name: str,
+    room_params: RoomParams,
+    monitor_output: MonitorOutput,
+) -> SiteData:
+    """
+    Build a SiteData object from the given site name, room parameters, and monitor output.
+    """
+    return SiteData(site_name=site_name, room_params=room_params, monitor_output=monitor_output)
