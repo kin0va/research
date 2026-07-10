@@ -58,6 +58,12 @@ CO2_BANDS = [
     (1000, 5000, "#C1543C22", "Poor"),
 ]
 
+# Convenience constants for other modules
+# Typical ambient/background CO2 level shown on plots (approximate)
+CO2_BACKGROUND_PPM = 420
+# Semantic color shortcut for CO2 series
+COLOR_CO2 = PALETTE["co2_line"]
+
 # ---------------------------------------------------------------------------
 # Figure sizing
 # ---------------------------------------------------------------------------

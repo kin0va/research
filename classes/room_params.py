@@ -29,6 +29,8 @@ class RoomParams:
         length: float,
         max_occupancy: int,
         volume: float | None = None,
+        c_amb: float | None = None,
+        cpp_per_person: float | None = None,
     ) -> None:
         """
         Initialize room parameters.
@@ -40,7 +42,9 @@ class RoomParams:
             max_occupancy: Maximum expected number of people in the room
             volume: Optional room volume in cubic meters. If not provided,
                    it will be calculated from dimensions.
-        
+            c_amb: Optional ambient CO2 level in ppm. If not provided, defaults to 420.
+            cpp_per_person: Optional CO2 production per person in m³/s. If not provided, defaults to 0.005.
+
         Raises:
             ValueError: If any dimension is non-positive or max_occupancy is non-positive
         """
@@ -65,7 +69,11 @@ class RoomParams:
         
         # Store occupancy constraint
         self.max_occupancy: int = max_occupancy
-    
+        
+        # Store CO2 parameters
+        self.c_amb: float | None = c_amb
+        self.cpp_per_person: float | None = cpp_per_person
+
     def _calculate_volume(self) -> float:
         """
         Calculate room volume from dimensional parameters.

@@ -32,7 +32,7 @@ def apply_kalman_filter(sitedata: SiteData, room_params: RoomParams) -> Plotting
     N_out = np.zeros(len(sitedata.monitor_output.co2_series))
     ACH_out = np.zeros(len(sitedata.monitor_output.co2_series))
     for i in range(len(sitedata.monitor_output.co2_series) - 1):
-        dt_s = sitedata.monitor_output.time_series[i + 1] - sitedata.monitor_output.time_series[i]
+        dt_s = (sitedata.monitor_output.time_series[i + 1] - sitedata.monitor_output.time_series[i]).total_seconds()
         ukf.predict(dt=dt_s)
         ukf.update(z=[sitedata.monitor_output.co2_series[i + 1]], hx=lambda x: hx(x, sitedata.monitor_output.co2_series[i], dt_s, room_params))
         N_out[i], ACH_out[i] = ukf.x
@@ -51,6 +51,10 @@ def fx(x, dt):
 
 def hx(x, C_i, dt_s, params):
     """Observation model — predicted next CO2 given current state."""
+    if params.c_amb is None:
+        params.c_amb = 420  # Default ambient CO2 level
+    if params.cpp_per_person is None:
+        params.cpp_per_person = 0.005  # Default CO2 production per person (m³/s)
     N, ACH = x
     ACH = max(ACH, 0.05)
     C_eq = params.c_amb + (N * params.cpp_per_person) / ACH
