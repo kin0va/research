@@ -7,10 +7,11 @@ import numpy as np
 import pandas as pd
 from filterpy.kalman import UnscentedKalmanFilter, MerweScaledSigmaPoints
 from classes.state_machine import occupancy_state_machine
+from cli.updater import RuntimeUpdater
 from typing import List
 
 
-def apply_kalman_filter(sitedata: SiteData, room_params: RoomParams) -> PlottingData:
+def apply_kalman_filter(sitedata: SiteData, room_params: RoomParams,updater:RuntimeUpdater) -> PlottingData:
     """
     Apply Kalman filter to the CO2 data in sitedata.monitor_output.
     Uses the filter to calculate occupancy and monitor ACH.
@@ -31,11 +32,16 @@ def apply_kalman_filter(sitedata: SiteData, room_params: RoomParams) -> Plotting
     ukf.R = np.array([[272.0]])           # measurement variance from your noise diagnostics
     N_out = np.zeros(len(sitedata.monitor_output.co2_series))
     ACH_out = np.zeros(len(sitedata.monitor_output.co2_series))
-    for i in range(len(sitedata.monitor_output.co2_series) - 1):
-        dt_s = (sitedata.monitor_output.time_series[i + 1] - sitedata.monitor_output.time_series[i]).total_seconds()
-        ukf.predict(dt=dt_s)
-        ukf.update(z=[sitedata.monitor_output.co2_series[i + 1]], hx=lambda x: hx(x, sitedata.monitor_output.co2_series[i], dt_s, room_params))
-        N_out[i], ACH_out[i] = ukf.x
+    with updater.create_progress() as progress:
+        task = progress.add_task("[cyan]Applying Kalman Filter...", total=len(sitedata.monitor_output.co2_series)-1)
+        for i in range(len(sitedata.monitor_output.co2_series) - 1):
+            dt_s = (sitedata.monitor_output.time_series[i + 1] - sitedata.monitor_output.time_series[i]).total_seconds()
+            ukf.predict(dt=dt_s)
+            
+            ukf.update(z=[sitedata.monitor_output.co2_series[i + 1]], hx=lambda x: hx(x, sitedata.monitor_output.co2_series[i], dt_s, room_params))
+            N_out[i], ACH_out[i] = ukf.x
+            progress.advance(task)
+
 
     return PlottingData(
         site_data=sitedata,

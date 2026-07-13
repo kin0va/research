@@ -24,7 +24,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
-
+import matplotlib
+# change backend to allow for progress bars. Will only save pngs as a result
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.axes import Axes

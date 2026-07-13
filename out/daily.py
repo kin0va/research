@@ -10,6 +10,7 @@ from matplotlib.axes import Axes
 from out.style import CO2_BACKGROUND_PPM, COLOR_CO2
 from out.base import new_figure, style_axis, mark_cycles, save_figure
 
+
 if t.TYPE_CHECKING:
     import pandas as pd
     from classes.cycles import BuildUpDecayCycle
@@ -35,6 +36,9 @@ def plot_daily(
         savepath: if provided (and ax was None), saves the figure here.
     """
     day_frames = plotting_data.site_data.days_data
+    full_df = plotting_data.monitor_output.to_dataframe()
+    full_df["occupancy"] = plotting_data.occupancy_series
+    full_df["ach"] = plotting_data.ACH_series
     try:
         df = day_frames[day_label]
     except KeyError as exc:
@@ -49,6 +53,7 @@ def plot_daily(
         for cycle in plotting_data.site_data.valid_cycles
         if day_start <= plotting_data.monitor_output.time_series[cycle.peak_idx] <= day_end
     ]
+    plot_df = full_df[(full_df["Time"] >= day_start) & (full_df["Time"] <= day_end)].reset_index(drop=True)
 
     original_ax = ax
     if ax is None:
@@ -63,9 +68,14 @@ def plot_daily(
             save_figure(fig, savepath) #type: ignore
         return ax
 
-    ax.plot(df["Time"], df["CO2"], color=COLOR_CO2, linewidth=1.2, label="CO₂")
+    ax.plot(plot_df["Time"], plot_df["CO2"], color=COLOR_CO2, linewidth=1.2, label="CO₂")
     ax.axhline(CO2_BACKGROUND_PPM, color="grey", linestyle="--", linewidth=0.8,
                alpha=0.7, label="Ambient (~420 ppm)")
+
+    ax2 = ax.twinx()
+    ax2.plot(plot_df["Time"], plot_df["occupancy"], color="tab:orange", linewidth=1.0, label="Occupancy")
+    ax2.plot(plot_df["Time"], plot_df["ach"], color="tab:green", linewidth=1.0, label="ACH")
+    ax2.set_ylabel("Occupancy / ACH")
 
     if cycles:
         mark_cycles(ax, cycles, plotting_data.monitor_output.time_series) #type: ignore
