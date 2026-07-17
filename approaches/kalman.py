@@ -56,13 +56,12 @@ def fx(x, dt):
     return x  # [N, ACH] unchanged; filterpy adds process noise Q separately
 
 def hx(x, C_i, dt_s, params):
-    """Observation model — predicted next CO2 given current state."""
     if params.c_amb is None:
-        params.c_amb = 420  # Default ambient CO2 level
+        params.c_amb = 420
     if params.cpp_per_person is None:
-        params.cpp_per_person = 0.005  # Default CO2 production per person (m³/s)
+        params.cpp_per_person = 5e-6  # m³/s per person, not 0.005
     N, ACH = x
     ACH = max(ACH, 0.05)
-    C_eq = params.c_amb + (N * params.cpp_per_person) / ACH
+    C_eq = params.c_amb + (N * params.cpp_per_person * 3.6e9) / (params.volume * ACH)
     alpha = np.exp(-ACH * dt_s / 3600.0)
     return np.array([C_eq + (C_i - C_eq) * alpha])
