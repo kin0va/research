@@ -4,4 +4,4 @@
 /data/
 *.pyc
 tests
-log.txt
+log.*
