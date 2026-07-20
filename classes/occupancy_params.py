@@ -22,7 +22,7 @@ class OccupancyParameters:
     """
     def __init__(self, volume: float, rho_air: float = 1.2, c_amb: float = 420,
                  c_adj: Optional[float] = None, m_v_in: float = 0.0,
-                 cpp_per_person: float = 0.001,site_code: str = ""):
+                 cpp_per_person: float = 5e-6,site_code: str = ""):
         self.volume          = volume
         self.rho_air         = rho_air
         self.c_amb           = c_amb

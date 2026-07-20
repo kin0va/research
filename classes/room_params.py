@@ -30,7 +30,7 @@ class RoomParams:
         max_occupancy: int,
         volume: float | None = None,
         c_amb: float | None = None,
-        cpp_per_person: float | None = None,
+        cpp_per_person: float = 5e-6,
     ) -> None:
         """
         Initialize room parameters.

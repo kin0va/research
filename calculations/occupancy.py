@@ -2,57 +2,26 @@ import numpy as np
 import typing as t
 from classes.occupancy_params import OccupancyParameters
 
-def Cali_Occupancy_Equation(co2_series: np.ndarray, delta_t_s: np.ndarray, ACH_decay: float, params:OccupancyParameters,) -> np.ndarray:
-    """
-    This function uses the occupancy equation of Cali et al. to calculate the occupancy profile.
+def Cali_Occupancy_Equation(co2_series: np.ndarray, delta_t_s: np.ndarray, ACH_decay: float, params: OccupancyParameters) -> np.ndarray:
+    C_amb = params.c_amb
+    G = params.cpp_per_person   # m³/s of CO2 per person, ~5e-6 at rest
+    V = params.volume           # m³
 
-    Formula:
-            C[i+1] = (1 - mairx x ^t/(rho x V)) x  C[i] + mv_amb x ^t/(rho x V) x  C_amb + mv_in x ^t/(rho x V) x  C_adj + nocc x ^t/V x  CpPp CHECK WITH FRESH EYES
-    Where:
-        C[i]: CO2 concentration at time step i
-        mairx: mass of air in the room (rho x V)
-        t: time step duration in seconds
-        rho: density of air
-        V: volume of the room
-        mv_amb: mass flow rate of ambient air
-        C_amb: CO2 concentration of ambient air
-        mv_in: mass flow rate of incoming air (e.g., from ventilation)
-        C_adj: CO2 concentration of incoming air
-        nocc: number of occupants
-        CpPp: CO2 production per person
-
-    Rearranging the formula to solve for nocc gives:
-            nocc = (C[i+1] - (1 - mairx x ^t/(rho x V)) x  C[i] - mv_amb x ^t/(rho x V) x  C_amb - mv_in x ^t/(rho x V) x  C_adj) / ( ^t/V x  CpPp) CHECK WITH FRESH EYES
-
-    Args:
-        co2_series: Array of CO2 concentrations at each time step.
-        delta_t_s: Array of time step durations in seconds.
-        ACH_decay: Air Changes per Hour from the decay phase.
-        params: OccupancyParameters object containing physical constants.
-
-    Returns:
-        Array of estimated occupancy (number of occupants) at each time step.
-    """
-    #initialise variables
-    V = params.volume
-    rho = params.rho_air
-    co2pp = params.cpp_per_person
-    ambco2 = params.c_amb
-    adjco2 = params.c_adj
-    mv_in = params.m_v_in
-
-    # Calculate mass of air in the room
-    mairx = rho * V
-
-    #initialise occupancy numpy array
     occupancy = np.zeros_like(co2_series)
 
     for i in range(len(co2_series) - 1):
-        delta_t = delta_t_s[i]
+        dt = delta_t_s[i]
         C_i = co2_series[i]
         C_next = co2_series[i + 1]
 
-        # Calculate the occupancy using the rearranged formula
-        occupancy[i] = (C_next - (1 - mairx * np.exp(-ACH_decay * delta_t / 3600)) * C_i - (mv_in * np.exp(-ACH_decay * delta_t / 3600) / (rho * V)) * adjco2 - (ambco2 * np.exp(-ACH_decay * delta_t / 3600) / (rho * V))) / ((delta_t / V) * co2pp)
+        alpha = np.exp(-ACH_decay * dt / 3600.0)
+        denom = 1 - alpha
+        if denom < 1e-4:
+            occupancy[i] = np.nan
+            continue
+
+        C_eq = (C_next - C_i * alpha) / denom
+        # C_eq = C_amb + N*G*3.6e9/(V*ACH)  →  solve for N
+        occupancy[i] = ACH_decay * V * (C_eq - C_amb) / (G * 3.6e9)
 
     return occupancy
