@@ -3,4 +3,5 @@
 /results/
 /data/
 *.pyc
-testsS
+tests
+log.*

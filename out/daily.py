@@ -27,8 +27,7 @@ def plot_daily(
     """Plot one day's CO2 trace against time-of-day.
 
     Args:
-        plotting_data: a PlottingData object containing SiteData, monitor output,
-            and Kalman-derived series.
+        plotting_data: a PlottingData object containing SiteData, monitor output and ACH
         day_label: label for the day to plot, matching SiteData.days_data keys.
         title: plot title. Defaults to the day label if omitted.
         ax: existing Axes to draw into (for grids); otherwise a new
