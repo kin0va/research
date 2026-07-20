@@ -10,7 +10,7 @@ def validate_occupied_periods(start_time: pd.Timestamp, end_time: pd.Timestamp, 
     """
     # Example validation logic: Check if the duration of the occupied period is reasonable
     duration = (end_time - start_time).total_seconds() / 60  # duration in minutes
-    if duration < 5 or duration > 480:  # less than 5 minutes or more than 8 hours
+    if duration < 20:  # less than 5 minutes or more than 8 hours
         return False
 
     # Additional validation logic can be added here based on room_params and monitor_output
@@ -22,7 +22,7 @@ def occupancy_state_machine(sitedata: SiteData,runtime:RuntimeUpdater):
     State machine to be ran over dataset to determine occupied vs unoccupied periods.
     It modifies the sitedata.occupied_periods list in place, which is a list of tuples of (start_time, end_time) for each occupied period.
     """
-    occupancy_threshold = 450 #Initial threshold for occupancy detection CO2 in ppm, can be adjusted based on the specific site and conditions.
+    occupancy_threshold = 485 #Initial threshold for occupancy detection CO2 in ppm, can be adjusted based on the specific site and conditions.
 
     state = "unoccupied"
 
@@ -51,8 +51,8 @@ def occupancy_state_machine(sitedata: SiteData,runtime:RuntimeUpdater):
                         progress.advance(task)
 
                     else:
-                        # If the period is invalid, we can choose to log it or handle it differently
-                        print(f"Invalid occupied period from {start_time} to {end_time}. Not added to occupied_periods.")
+                        
                         start_time = None # type: ignore
                         end_time = None  # type: ignore
                         progress.advance(task)
+            progress.advance(task)

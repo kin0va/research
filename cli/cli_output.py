@@ -5,7 +5,7 @@ import numpy as np
 
 from rich.panel import Panel
 from rich.table import Table
-
+from rich .console import Console
 
 def cli_output(data: PlottingData, updater: RuntimeUpdater):
     """
@@ -21,9 +21,9 @@ def cli_output(data: PlottingData, updater: RuntimeUpdater):
         data.site_data.monitor_output.co2_series
     )
 
-    average_occ = np.mean(data.occupancy_series)
-
-    average_ACH = np.mean(data.ACH_series)  # type: ignore
+    average_occ = np.nanmean(data.occupancy_series[data.occupancy_series != 0])
+    median_occ = np.nanmedian(data.occupancy_series[data.occupancy_series != 0])
+    average_ACH = np.nanmean(data.ACH_series)  # type: ignore
 
     table = Table(
         show_header=False,
@@ -55,6 +55,11 @@ def cli_output(data: PlottingData, updater: RuntimeUpdater):
     )
 
     table.add_row(
+        "Median occupancy",
+        f"{median_occ:.2f} people",
+    )
+
+    table.add_row(
         "Average ACH",
         f"{average_ACH:.2f} /hr",
     )
@@ -66,3 +71,26 @@ def cli_output(data: PlottingData, updater: RuntimeUpdater):
     )
 
     updater.console.print(panel)
+
+
+    dumptable = Table(title="ACH vs Occupancy")
+    dumptable.add_column("ACH")
+    dumptable.add_column("Occupancy")
+    for i, ach in enumerate(data.ACH_series):  # type: ignore
+        ach_string = f"{ach}"
+        occupancy = data.occupancy_series[i]
+
+        dumptable.add_row(
+            ach_string,
+            str(occupancy),
+        )
+
+    rawdump = Panel(
+        dumptable,
+        title="Raw Occupancy Output",
+        border_style="green"
+    )
+
+    with open("log.txt", "w", encoding="utf-8") as f:
+        log = Console(file=f, width=80)
+        log.print(dumptable)

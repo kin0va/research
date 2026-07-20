@@ -13,6 +13,7 @@ from classes.sitedata import SiteData
 from classes.plotting_data import PlottingData
 #approaches
 from approaches.kalman import apply_kalman_filter
+from approaches.buildup import model_buildup
 #output
 from out.daily import plot_daily
 
@@ -88,8 +89,8 @@ def main() -> int:
     site_data = SiteData(site_name=room_params[0]or "Default Site", room_params=room_params[1], monitor_output=monitor_output)
     updater.string_process_finish("SiteData Object Created")
     #this section dictates what approach is being used, for now just kalman but will be expanded using cmd args to select approach
-    data = run_kalman_filter(site_data, room_params[1], updater)
-    updater.string_process_finish("Kalman filter processing complete. Plots saved in results/ directory.")
+    data = model_buildup(site_data,room_params[1],updater)
+    updater.string_process_finish("Buildup filter processing complete. Plots saved in results/ directory.")
     cli_output(data,updater)
     return 1
 

@@ -8,6 +8,7 @@ from cli.updater import RuntimeUpdater
 
 from calculations.tracer_decay import build_up_profile
 from calculations.occupancy import Cali_Occupancy_Equation
+from calculations.ach import ACH_tracer_decay
 
 from scipy.optimize import curve_fit
 import numpy as np
@@ -24,6 +25,41 @@ def _pre_buildup_baseline(co2_series: np.ndarray, start_idx: int, lookback: int 
         return co2_series[start_idx]
     return float(np.mean(baseline_window))
 
+def _prior_decay_ach(
+    co2_series: np.ndarray,
+    time_series,
+    start_idx: int,
+    c_background: float,
+    lookback: int = 10,
+    default: float = 1.0,
+) -> float:
+    """
+    Estimate ACH from the decay immediately preceding a build-up period,
+    using the same lookback window as the C_valley baseline. Used as the
+    initial guess for the build-up curve fit — a real prior beats a
+    hardcoded constant, especially when ventilation varies cycle to cycle.
+    """
+    window_start = max(0, start_idx - lookback)
+    if window_start >= start_idx - 1:
+        return default
+
+    c_init = float(co2_series[window_start])
+    c_final = float(co2_series[start_idx - 1])
+    t_minutes = (time_series[start_idx - 1] - time_series[window_start]).total_seconds() / 60
+
+    if t_minutes <= 0 or c_final <= c_background or c_init <= c_background:
+        # Not a valid decay (flat, rising, or already at background) — fall back
+        return default
+
+    try:
+        ach = ACH_tracer_decay(c_init, c_background, c_final, t_minutes)
+    except ValueError:
+        return default
+
+    if not np.isfinite(ach) or ach <= 0:
+        return default
+
+    return ach
 
 def fit_build_up_ach(
     t_minutes: np.ndarray,
@@ -32,23 +68,20 @@ def fit_build_up_ach(
     ach_initial_guess: float = 1.0,
     param_range: float = 5000.0,
 ):
-    """
-    Fit the build-up model to a single occupied period to estimate ACH.
-    C_valley is held fixed (taken from the steady state before the period),
-    C_peak and ACH are solved for.
-
-    Returns:
-        (C_peak_fit, ACH_fit, fitted_series) on success, None on failure.
-    """
-
     def model(t, C_peak, ACH):
         return build_up_profile(t, C_valley, C_peak, ACH)
 
-    p0 = [co2_segment.max(), ach_initial_guess]
-    bounds = ([C_valley, 0.01], [param_range, 20.0])
+    lower = [C_valley, 0.01]
+    upper = [param_range, 20.0]
+
+    p0 = [
+        float(np.clip(co2_segment.max(), lower[0] + 1e-6, upper[0])),
+        float(np.clip(ach_guess if (ach_guess := ach_initial_guess) and np.isfinite(ach_guess) else 1.0,
+                       lower[1], upper[1])),
+    ]
 
     try:
-        popt, _ = curve_fit(model, t_minutes, co2_segment, p0=p0, bounds=bounds)
+        popt, _ = curve_fit(model, t_minutes, co2_segment, p0=p0, bounds=(lower, upper))
         C_peak_fit, ACH_fit = popt
         fitted_series = model(t_minutes, *popt)
         return C_peak_fit, ACH_fit, fitted_series
@@ -75,7 +108,7 @@ def model_buildup(data: SiteData, room_params: RoomParams, runtime: RuntimeUpdat
     occ_params = OccupancyParameters(
         volume=room_params.volume,
         c_amb=room_params.c_amb if room_params.c_amb is not None else 420,
-        cpp_per_person=room_params.cpp_per_person if room_params.cpp_per_person is not None else 0.005,
+        cpp_per_person=room_params.cpp_per_person if room_params.cpp_per_person is not None else 5e-6,
     )
 
     with runtime.create_progress() as progress:
@@ -97,8 +130,9 @@ def model_buildup(data: SiteData, room_params: RoomParams, runtime: RuntimeUpdat
             )
 
             C_valley = _pre_buildup_baseline(co2_series, idx[0])
+            ach_guess = _prior_decay_ach(co2_series, time_series, idx[0], occ_params.c_amb)
 
-            fit_result = fit_build_up_ach(t_minutes, period_co2, C_valley)
+            fit_result = fit_build_up_ach(t_minutes, period_co2, C_valley, ach_initial_guess=ach_guess)
             if fit_result is None:
                 progress.advance(task)
                 continue
